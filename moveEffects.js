@@ -26,13 +26,20 @@ const effects = {
 
 
 const setStyleOnChildren = (elem, effect) => {
-    if (elem.tagName === 'BR') return;
+    const tags = ['UL', 'DIV', 'P', 'H1', 'H2', 'H3', 'H4', 'LI', 'BUTTON', 'A'];
 
     if (elem.children.length === 0) {
-        const elemPosY = window.pageYOffset + elem.getBoundingClientRect().top;
-        const currentY = window.pageYOffset + window.innerHeight;
-        
-        startMoving(elem, elemPosY, currentY, effect);
+        if (tags.includes(elem.tagName)) {
+            const elemPosY = window.pageYOffset + elem.getBoundingClientRect().top;
+            const currentY = window.pageYOffset + window.innerHeight;
+            
+            startMoving(elem, elemPosY, currentY, effect);
+        } else if (tags.includes(elem.parentElement.tagName)) {
+            const elemPosY = window.pageYOffset + elem.parentElement.getBoundingClientRect().top;
+            const currentY = window.pageYOffset + window.innerHeight;
+            
+            startMoving(elem.parentElement, elemPosY, currentY, effect);
+        }
     }
 
     for (let item of elem.children) {
@@ -45,15 +52,15 @@ const startMoving = (item, elemPosY, currentY, effect) => {
         item.style.transform = `${effects[effect].back}`;
         item.style.opacity = 1;
         item.style.visibility = 'visible';
+        item.style.willChange = 'transform';
     }
 
-    if (currentY <= elemPosY - 200) {
-        item.style.cssText = `
-            transition: 1s ease;
-            transform: ${effects[effect].next};
-            opacity: 0;
-            visibility: hidden;
-        `;
+    if (currentY <= elemPosY - 100) {
+        item.style.transition = '1s ease';
+        item.style.transform = effects[effect].next;
+        item.style.opacity = 0;
+        item.style.visibility = 'hidden';
+        item.style.willChange = 'auto';
     }
 }
 
@@ -64,6 +71,8 @@ const setMoveEffects = (evt) => {
         const currentEffects = item.dataset.moveEffects.split(',');
         const child = currentEffects[1] ? currentEffects[1].trim() : false;
         const effect = currentEffects[0];
+        
+        if (!effects[effect]) return;
         
         if (child === 'true') {
             setStyleOnChildren(item, effect);

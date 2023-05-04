@@ -1,32 +1,9 @@
-import { debounce } from "./utils.js";
+import { throttling } from "./utils.js";
 
 const dataEffects = document.querySelectorAll('[data-move-effects]');
-const effects = {
-    top: {
-        next: 'translateY(70px)',
-        back: 'translateY(0)',
-    },
-    left: {
-        next: 'translateX(-100px)',
-        back: 'translateX(0)',
-    },
-    right: {
-        next: 'translateX(100px)',
-        back: 'translateX(0)',
-    },
-    bottom: {
-        next: 'translateY(-70px)',
-        back: 'translateY(0)',
-    },
-    scale: {
-        next: 'scale(0.5)',
-        back: 'scale(1)',
-    }
-};
-
 
 const setStyleOnChildren = (elem, effect) => {
-    const tags = ['UL', 'DIV', 'P', 'H1', 'H2', 'H3', 'H4', 'LI', 'BUTTON', 'A'];
+    const tags = ['DIV', 'P', 'H1', 'H2', 'H3', 'H4', 'LI', 'BUTTON', 'A'];
 
     if (elem.children.length === 0) {
         if (tags.includes(elem.tagName)) {
@@ -47,20 +24,13 @@ const setStyleOnChildren = (elem, effect) => {
     }
 };
 
-const startMoving = (item, elemPosY, currentY, effect) => {
+const startMoving = (item, elemPosY, currentY, myClass) => {
     if (currentY >= elemPosY) {
-        item.style.transform = `${effects[effect].back}`;
-        item.style.opacity = 1;
-        item.style.visibility = 'visible';
-        item.style.willChange = 'transform';
+        item.classList.add(myClass);
     }
 
     if (currentY <= elemPosY - 100) {
-        item.style.transition = '1s ease';
-        item.style.transform = effects[effect].next;
-        item.style.opacity = 0;
-        item.style.visibility = 'hidden';
-        item.style.willChange = 'auto';
+        item.classList.remove(myClass);
     }
 }
 
@@ -70,20 +40,17 @@ const setMoveEffects = (evt) => {
         const currentY = window.pageYOffset + window.innerHeight;
         const currentEffects = item.dataset.moveEffects.split(',');
         const child = currentEffects[1] ? currentEffects[1].trim() : false;
-        const effect = currentEffects[0];
-        
-        if (!effects[effect]) return;
-        
+        const myClass = currentEffects[0];
+                
         if (child === 'true') {
-            setStyleOnChildren(item, effect);
+            setStyleOnChildren(item, myClass);
         } else {
-            startMoving(item, elemPosY, currentY, effect);
+            startMoving(item, elemPosY, currentY, myClass);
         }
 
     });
 };
 
-const debounceMoveEffects = debounce(setMoveEffects, 300);
+const debounceMoveEffects = throttling(setMoveEffects, 20);
 
 window.addEventListener('scroll', debounceMoveEffects);
-

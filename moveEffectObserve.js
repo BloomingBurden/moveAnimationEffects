@@ -33,7 +33,7 @@ const setStyleOnChildren = (elem) => {
         if (tags.includes(elem.tagName)) {
             observer.observe(elem);
         } else if (tags.includes(elem.parentElement.tagName)) {
-            observer.observe(elem);
+            observer.observe(elem.parentElement);
         }
     }
 
